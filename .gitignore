@@ -25,3 +25,40 @@ replay_pid*
 
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
+
+# Gradle & Build
+build/
+.gradle/
+gradle-app.setting
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+.classpath
+.project
+.settings/
+*.sublime-workspace
+
+# Generated code (Grammar-Kit generates these)
+src/main/gen/
+gen/
+
+# IntelliJ Plugin Sandbox
+build/idea-sandbox/
+
+# Test artifacts
+out/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.lnk
+
+# Local environment
+local.properties
+.env

@@ -1,0 +1,76 @@
+<idea-plugin>
+    <id>com.mberk-yilmaz.capnp</id>
+    <name>Cap'n Proto Support</name>
+    <vendor>mberk-yilmaz</vendor>
+
+    <description><![CDATA[
+      Complete Cap'n Proto schema language support for IntelliJ-based IDEs.
+      <br/><br/>
+      <b>Features:</b>
+      <ul>
+        <li><b>Syntax Highlighting:</b> Full syntax coloring for structs, enums, interfaces, annotations, and keywords</li>
+        <li><b>Smart Code Completion:</b> Auto-completion for keywords, types, Cap'n Proto primitives, and annotation suggestions ($required, $maxLength, $minValue, etc.)</li>
+        <li><b>Navigation:</b> Go to Definition for custom types and references</li>
+        <li><b>Code Formatting:</b> Automatic code formatting and indentation</li>
+        <li><b>Error Detection:</b> Real-time validation with helpful error messages</li>
+        <li><b>Namespace Support:</b> Full support for namespace declarations with :: syntax</li>
+        <li><b>Annotation Support:</b> Complete support for field annotations with smart auto-completion</li>
+        <li><b>ID Generation:</b> Right-click context menu to generate unique file IDs</li>
+        <li><b>Structure View:</b> Quick navigation with outline view</li>
+        <li><b>Brace Matching:</b> Smart bracket and brace matching</li>
+      </ul>
+      <br/>
+      Supports Cap'n Proto schema files (.capnp) with advanced features including generics,
+      interfaces, unions, groups, and custom annotations.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- 1. File Type & Settings -->
+        <fileType name="Cap'n Proto File"
+                  implementationClass="com.mberk_yilmaz.capnp.CapnpFileType"
+                  fieldName="INSTANCE"
+                  language="CapnProto"
+                  extensions="capnp"/>
+
+        <!-- 2. Parser & Lexer -->
+        <lang.parserDefinition language="CapnProto"
+                               implementationClass="com.mberk_yilmaz.capnp.parser.CapnpParserDefinition"/>
+
+        <!-- 3. Syntax Highlighting -->
+        <lang.syntaxHighlighterFactory language="CapnProto"
+                                       implementationClass="com.mberk_yilmaz.capnp.highlighting.CapnpSyntaxHighlighterFactory"/>
+        <colorSettingsPage implementation="com.mberk_yilmaz.capnp.highlighting.CapnpColorSettingsPage"/>
+
+        <!-- 4. Code Completion -->
+        <completion.contributor language="CapnProto"
+                                implementationClass="com.mberk_yilmaz.capnp.completion.CapnpCompletionContributor"/>
+
+        <!-- 5. Navigation & References -->
+        <psi.referenceContributor language="CapnProto"
+                                  implementation="com.mberk_yilmaz.capnp.reference.CapnpReferenceContributor"/>
+        
+        <!-- 6. Annotator (Error Highlighting) -->
+        <annotator language="CapnProto"
+                   implementationClass="com.mberk_yilmaz.capnp.annotator.CapnpAnnotator"/>
+
+        <!-- 7. Formatting -->
+        <lang.formatter language="CapnProto"
+                        implementationClass="com.mberk_yilmaz.capnp.formatting.CapnpFormattingModelBuilder"/>
+
+        <!-- Other enhancements: Structure View, Brace Matcher -->
+        <lang.braceMatcher language="CapnProto"
+                           implementationClass="com.mberk_yilmaz.capnp.CapnpBraceMatcher"/>
+    </extensions>
+
+    <!-- Actions -->
+    <actions>
+        <action id="CapnpIdGenerate"
+                class="com.mberk_yilmaz.capnp.action.CapnpIdGenerateAction"
+                text="Generate Cap'n Proto ID"
+                description="Generate and insert a unique file ID for Cap'n Proto files">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

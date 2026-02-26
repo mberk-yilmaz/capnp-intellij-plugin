@@ -1,0 +1,147 @@
+{
+  parserClass="com.mberk_yilmaz.capnp.parser.CapnProtoParser"
+  parserUtilClass="com.mberk_yilmaz.capnp.parser.CapnProtoParserUtil"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Capnp"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.mberk_yilmaz.capnp.psi"
+  psiImplPackage="com.mberk_yilmaz.capnp.psi.impl"
+
+  elementTypeHolderClass="com.mberk_yilmaz.capnp.psi.CapnpTypes"
+  elementTypeClass="com.mberk_yilmaz.capnp.psi.CapnpElementType"
+  tokenTypeClass="com.mberk_yilmaz.capnp.psi.CapnpTokenType"
+
+  tokens = [
+    LBRACE="{"
+    RBRACE="}"
+    LPAREN="("
+    RPAREN=")"
+    LBRACKET="["
+    RBRACKET="]"
+    COLON=":"
+    SEMICOLON=";"
+    EQUALS="="
+    AT="@"
+    COMMA=","
+    DOT="."
+    DOUBLE_COLON="::"
+    ARROW="->"
+    DOLLAR="$"
+
+    STRUCT_KW="struct"
+    ENUM_KW="enum"
+    INTERFACE_KW="interface"
+    ANNOTATION_KW="annotation"
+    EXTENDS_KW="extends"
+    UNION_KW="union"
+    GROUP_KW="group"
+    CONST_KW="const"
+    USING_KW="using"
+    IMPORT_KW="import"
+    NAMESPACE_KW="namespace"
+
+    PRIMITIVE_TYPE="regexp:(Void|Bool|Int8|Int16|Int32|Int64|UInt8|UInt16|UInt32|UInt64|Float32|Float64|Text|Data|AnyPointer)"
+    
+    ID_VALUE="regexp:\d+"
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+    HEX_STRING="regexp:0x[0-9a-fA-F]+"
+    FILE_ID_TOKEN="regexp:@0x[0-9a-fA-F]+;"
+    LINE_COMMENT="regexp:#.*"
+    STRING_LITERAL="regexp:\"([^\"\\]|\\.)*\""
+    FLOAT_LITERAL="regexp:-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?"
+  ]
+}
+
+// 1. Root Element
+capnpFile ::= fileId? statement*
+
+// 2. Elements & Rules
+private statement ::= (
+    fileId
+  | namespaceDecl
+  | structDef
+  | enumDef
+  | interfaceDef
+  | constDef
+  | usingDef
+  | annotationDef
+  | annotationAppStmt
+  | importDecl
+) {recoverWhile=statement_recover}
+
+private statement_recover ::= !(STRUCT_KW | ENUM_KW | INTERFACE_KW | ANNOTATION_KW | UNION_KW | USING_KW | IMPORT_KW | CONST_KW | NAMESPACE_KW | DOLLAR)
+
+// Represents `@0x123456789abcdef0;`
+fileId ::= FILE_ID_TOKEN
+
+importExpr ::= IMPORT_KW STRING_LITERAL
+importDecl ::= importExpr ';'
+usingDef ::= USING_KW IDENTIFIER '=' (type | importExpr) ';' | USING_KW (type | importExpr) ';'
+namespaceDecl ::= NAMESPACE_KW qualifiedName ';'
+qualifiedName ::= IDENTIFIER ((DOT | DOUBLE_COLON) IDENTIFIER)*
+
+structDef ::= STRUCT_KW IDENTIFIER structTypeParamDef? '{' structContent* '}'
+
+structTypeParamDef ::= '[' typeParam (',' typeParam)* ']'
+typeParam ::= IDENTIFIER
+
+structContent ::= (
+    fieldDef
+  | unionDef
+  | groupDef
+  | structDef
+  | enumDef
+  | interfaceDef
+  | constDef
+  | annotationDef
+  | annotationApp
+  | usingDef
+)
+
+// Example: `name @0 :Text;`
+fieldDef ::= IDENTIFIER AT ID_VALUE ':' type annotationApp* ('=' defaultValue)? annotationApp* ';'
+
+groupDef ::= IDENTIFIER ':' GROUP_KW '{' structContent* '}'
+unionDef ::= IDENTIFIER ':' UNION_KW '{' unionContent* '}' | UNION_KW '{' unionContent* '}'
+unionContent ::= fieldDef | groupDef
+
+enumDef ::= ENUM_KW IDENTIFIER '{' enumContent* '}'
+enumContent ::= IDENTIFIER AT ID_VALUE annotationApp* ';'
+
+interfaceDef ::= INTERFACE_KW IDENTIFIER extendsList? '{' interfaceContent* '}'
+extendsList ::= EXTENDS_KW '(' type (',' type)* ')'
+interfaceContent ::= methodDef | interfaceDef | structDef | enumDef | usingDef
+// Example: `methodName @0 (param1 :Text, param2 :Int32) -> (result :Bool);`
+methodDef ::= IDENTIFIER typeParamDef? AT ID_VALUE parameterList? ('->' returnTypeList)? ';'
+typeParamDef ::= '[' typeParam (',' typeParam)* ']'
+parameterList ::= '(' (fieldDefList)? ')'
+fieldDefList ::= fieldDefNoSemi (',' fieldDefNoSemi)*
+fieldDefNoSemi ::= IDENTIFIER ':' type annotationApp* ('=' defaultValue)? annotationApp*
+returnTypeList ::= '(' (fieldDefList)? ')' | type
+
+annotationDef ::= ANNOTATION_KW IDENTIFIER ('(' IDENTIFIER (',' IDENTIFIER)* ')')? (AT ID_VALUE)? ':' type ';'
+annotationApp ::= DOLLAR IDENTIFIER annotationAppTarget? annotationAppChain* annotationAppArgs?
+annotationAppTarget ::= STRING_LITERAL
+annotationAppChain ::= '.' IDENTIFIER annotationAppArgs?
+annotationAppArgs ::= '(' (annotationAppArg (',' annotationAppArg)*)? ')'
+annotationAppStmt ::= annotationApp ';'
+annotationAppArg ::= (IDENTIFIER '=')? defaultValue
+
+constDef ::= CONST_KW IDENTIFIER ':' type annotationApp* '=' defaultValue annotationApp* ';'
+
+type ::= (
+    PRIMITIVE_TYPE
+  | ListType
+  | customType
+)
+
+ListType ::= 'List' '(' type ')'
+customType ::= IDENTIFIER ('.' IDENTIFIER)* ('(' type (',' type)* ')')?
+
+defaultValue ::= STRING_LITERAL | FLOAT_LITERAL | ID_VALUE | IDENTIFIER | HEX_STRING | booleanLiteral | listLiteral | structLiteral
+booleanLiteral ::= 'true' | 'false'
+listLiteral ::= '[' (defaultValue (',' defaultValue)*)? ']'
+structLiteral ::= '(' (fieldAssignment (',' fieldAssignment)*)? ')'
+fieldAssignment ::= IDENTIFIER '=' defaultValue

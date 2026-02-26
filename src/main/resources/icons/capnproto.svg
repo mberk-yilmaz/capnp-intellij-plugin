@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Minimal Cap'n Proto file icon -->
+  
+  <!-- Document shape -->
+  <rect x="2.5" y="1.5" width="11" height="13" rx="1" fill="#E8F4FF" stroke="#5C9DD5" stroke-width="0.8"/>
+  
+  <!-- Folded corner -->
+  <path d="M 11.5 1.5 L 11.5 3.5 L 13.5 3.5 Z" fill="#D4E9FF" stroke="#5C9DD5" stroke-width="0.5"/>
+  
+  <!-- Letter "C" for Cap'n Proto -->
+  <text x="8" y="10" font-family="monospace" font-size="7" fill="#2D6DA3" text-anchor="middle" font-weight="bold">C</text>
+  
+  <!-- .capnp extension indicator -->
+  <text x="8" y="13.5" font-family="monospace" font-size="2.5" fill="#7A7A7A" text-anchor="middle">.capnp</text>
+</svg>
