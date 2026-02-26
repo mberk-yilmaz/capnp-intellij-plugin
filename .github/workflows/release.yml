@@ -1,0 +1,60 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      
+      - name: Generate Lexer and Parser
+        run: ./gradlew generateLexer generateParser
+      
+      - name: Build Plugin
+        run: ./gradlew buildPlugin
+      
+      - name: Verify Plugin
+        run: ./gradlew verifyPlugin
+      
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: build/distributions/*.zip
+          body: |
+            Cap'n Proto IntelliJ Plugin v${{ steps.version.outputs.VERSION }}
+            
+            ## Installation
+            
+            1. Download the ZIP file below
+            2. In IntelliJ/CLion: Settings → Plugins → ⚙️ → Install Plugin from Disk
+            3. Select the downloaded ZIP file
+            4. Restart IDE
+            
+            ## Changes
+            
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
