@@ -2,6 +2,16 @@
 
 All notable changes to the Cap'n Proto IntelliJ Plugin will be documented in this file.
 
+## [1.0.1] - 2026-02-27
+
+### Changed
+- **Moved to IntelliJ 2025.1+ only** - dropped support for 2024.3.2
+- Updated minimum build number to 251 (IntelliJ IDEA 2025.1)
+
+### Fixed
+- Kotlin stdlib bundle compatibility
+- Build searchable options processing
+
 ## [1.0.0] - 2026-02-26
 
 ### Added

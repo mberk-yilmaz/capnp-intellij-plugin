@@ -1,20 +1,19 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("org.jetbrains.intellij") version "1.17.3"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
 }
 
 group = "com.mberk_yilmaz.capnp"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
 }
 
 intellij {
-    version.set("2024.3.2")
-    type.set("IC") // IntelliJ IDEA Community Edition
+    version.set("2025.1")
+    type.set("IU") // IntelliJ IDEA Ultimate (compatible with CLion, PyCharm, etc)
 }
 
 grammarKit {
@@ -28,8 +27,9 @@ tasks {
         sourceCompatibility = "17"
         targetCompatibility = "17"
     }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+
+    named("buildSearchableOptions") {
+        enabled = false
     }
 
     generateLexer {
@@ -46,16 +46,13 @@ tasks {
         purgeOldFiles.set(true)
     }
 
-    compileKotlin {
-        dependsOn(generateLexer, generateParser)
-    }
-
     withType<JavaCompile> {
         dependsOn(generateLexer, generateParser)
     }
 
     patchPluginXml {
-        sinceBuild.set("243")
+        sinceBuild.set("251")
+        untilBuild.set("253.*")
     }
 
     signPlugin {
